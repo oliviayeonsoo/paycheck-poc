@@ -1,0 +1,14 @@
+{
+  "name": "페이체크 PoC",
+  "short_name": "페이체크",
+  "description": "외국인 직원 급여 이체에 붙는 은행 앱 탑재 서비스 PoC",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#FFFFFF",
+  "lang": "ko",
+  "icons": [
+    { "src": "assets/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
