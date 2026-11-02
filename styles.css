@@ -77,7 +77,7 @@ svg { display: block; }
 .section-title { font-size: 17px; font-weight: 700; margin-top: 16px; }
 .muted { color: var(--gray); }
 .navy { color: var(--navy); }
-.gray { color: var(--gray); }
+.t-gray { color: var(--gray); }
 .fine { font-size: 12px; color: var(--gray); line-height: 1.5; }
 .hint { font-size: 13px; color: #33415c; text-align: center; margin-top: 8px; }
 

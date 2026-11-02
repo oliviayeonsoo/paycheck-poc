@@ -222,8 +222,8 @@ function records() {
   const status = e => {
     const inq = state.inquiries.filter(q => q.emp === e.id && !q.reply).length;
     if (inq) return `<b>문의 ${inq}건</b>`;
-    if (!state.sent && e.id === 'a') return '<b class="gray">이체 전</b>';
-    return state.viewed[e.id] ? '<b class="navy">열람과 대조 완료</b>' : '<b class="gray">발송 완료, 열람 전</b>';
+    if (!state.sent && e.id === 'a') return '<b class="t-gray">이체 전</b>';
+    return state.viewed[e.id] ? '<b class="navy">열람과 대조 완료</b>' : '<b class="t-gray">발송 완료, 열람 전</b>';
   };
   const allDone = state.sent && state.employees.every(e => state.viewed[e.id]) && state.inquiries.every(q => q.reply);
   const inquiries = state.inquiries.map((q, idx) => {
