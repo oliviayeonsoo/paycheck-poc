@@ -177,6 +177,33 @@ svg { display: block; }
 .bubble-body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 8px; }
 .amount { font-size: 24px; font-weight: 800; }
 
+/* 직원 명세서 아래 바로가기 두 개 */
+.tiles2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.tile2 { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 16px; border-radius: var(--radius); background: var(--card); text-align: left; }
+.tile2 b { font-size: 14px; font-weight: 600; line-height: 1.35; }
+.tile2-icon { width: 40px; height: 40px; border-radius: 12px; background: #fff; color: var(--navy); display: grid; place-items: center; }
+
+/* 지난 명세서 보관함 */
+.archive { gap: 2px; }
+.arch-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 8px; margin: 0 -8px; border-radius: 10px; width: calc(100% + 16px); text-align: left; }
+.arch-row .lbl, .arch-row .val { display: flex; flex-direction: column; gap: 3px; }
+.arch-row .val { align-items: flex-end; }
+.arch-row .lbl b { font-size: 15px; font-weight: 600; }
+.arch-row .val b { font-size: 16px; font-weight: 600; }
+.arch-row .val small { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; }
+.arch-row .val small .check-dot { width: 16px; height: 16px; }
+.arch-row .val small .check-dot svg { width: 11px; height: 11px; }
+.arch-row.current { background: var(--yellow-soft); }
+.arch-row.total .val b { font-size: 18px; font-weight: 800; }
+
+/* 해외송금 */
+.remit-field { display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--gray); }
+.remit-input { display: flex; align-items: center; gap: 6px; border-bottom: 2px solid var(--navy); padding-bottom: 4px; }
+.remit-input input { flex: 1; min-width: 0; border: 0; font: inherit; font-size: 26px; font-weight: 800; color: var(--ink); background: none; padding: 0; }
+.remit-input input:focus { outline: none; }
+.remit-input em { font-style: normal; font-size: 20px; font-weight: 700; color: var(--ink); }
+.remit-get b { font-size: 18px; color: var(--navy); }
+
 /* 사장님 카톡방: 직원이 보낼 메시지 초안 */
 .nav-title .sub { display: block; font-size: 12px; font-weight: 500; color: #33415c; }
 .sys-bubble { align-self: center; max-width: 320px; background: rgba(255, 255, 255, .55); border-radius: 12px; padding: 8px 12px; font-size: 12px; line-height: 1.5; color: #33415c; text-align: center; }
@@ -268,6 +295,7 @@ body[data-mode="owner"] #guide { display: none !important; }
   #print-root h1 { font-size: 18px; margin-bottom: 8px; }
   #print-root table { width: 100%; border-collapse: collapse; margin: 12px 0; }
   #print-root th, #print-root td { border: 1px solid #999; padding: 6px; text-align: right; }
+  #print-root tfoot td { font-weight: 700; }
   #print-root th:first-child, #print-root td:first-child { text-align: left; }
 }
 

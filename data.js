@@ -219,6 +219,117 @@ export const COMPOSE = {
   },
 };
 
+// 직원 화면의 지난 명세서 보관함. 9월은 앱이 계산한 이번 달 명세서를 쓴다
+export const ARCHIVE = [
+  { month: 4, net: 2350000, time: '13:48' },
+  { month: 5, net: 2380000, time: '14:05' },
+  { month: 6, net: 2410000, time: '13:57' },
+  { month: 7, net: 2380000, time: '14:11' },
+  { month: 8, net: 2330000, time: '14:02' },
+];
+
+// 해외송금 예시 조건. 환율과 수수료는 데모용 숫자다
+export const REMIT = {
+  fee: 5000,
+  quick: [500000, 1000000, 1500000],
+  start: 1500000,
+  // 직원 언어별 받는 나라 통화. 한국어로 보는 직원은 데모 직원(베트남)의 통화로
+  currency: {
+    vi: { code: 'VND', locale: 'vi-VN', rate: 18.6, digits: 0 },
+    ko: { code: 'VND', locale: 'vi-VN', rate: 18.6, digits: 0 },
+    ne: { code: 'NPR', locale: 'en-IN', rate: 0.097, digits: 0 },
+    pt: { code: 'BRL', locale: 'pt-BR', rate: 0.0040, digits: 2 },
+  },
+};
+
+// 보관함과 송금 화면 문구
+export const EXTRA = {
+  ko: {
+    archive: '지난 명세서',
+    archiveSub: '은행이 지급을 확인한 급여 기록이에요',
+    month: m => `${m}월`,
+    confirmed: '은행 지급 확인',
+    total: '6개월 합계',
+    proof: '소득 확인서 만들기',
+    proofTitle: '',
+    proofNote: '체류 연장이나 비자 서류에 낼 수 있어요.',
+    remit: '본국으로 송금',
+    received: '방금 들어온 9월 급여',
+    amount: '보낼 금액',
+    recipient: '받는 사람',
+    recipientName: '가족 (베트남 은행 계좌)',
+    rate: '환율 (예시)',
+    fee: '수수료',
+    get: '받는 금액',
+    note: '환율과 수수료는 데모용 예시예요.',
+    send: '송금하기',
+    notSent: '데모라서 실제로 송금되지는 않아요',
+  },
+  vi: {
+    archive: 'Bảng lương các tháng trước',
+    archiveSub: 'Các khoản lương đã được ngân hàng xác nhận',
+    month: m => `Tháng ${m}`,
+    confirmed: 'Ngân hàng đã xác nhận',
+    total: 'Tổng 6 tháng',
+    proof: 'Tạo giấy xác nhận thu nhập',
+    proofTitle: 'Giấy xác nhận thu nhập',
+    proofNote: 'Dùng khi gia hạn lưu trú hoặc làm hồ sơ visa.',
+    remit: 'Gửi tiền về nước',
+    received: 'Lương tháng 9 vừa nhận',
+    amount: 'Số tiền gửi',
+    recipient: 'Người nhận',
+    recipientName: 'Mẹ (tài khoản ngân hàng ở Việt Nam)',
+    rate: 'Tỷ giá (ví dụ)',
+    fee: 'Phí',
+    get: 'Người nhận sẽ nhận',
+    note: 'Tỷ giá và phí chỉ là ví dụ cho bản demo.',
+    send: 'Gửi tiền',
+    notSent: 'Bản demo: chưa chuyển tiền thật.',
+  },
+  ne: {
+    archive: 'पुराना तलब विवरणहरू',
+    archiveSub: 'बैंकले भुक्तानी पुष्टि गरेका तलबहरू',
+    month: m => ['', '', '', '', 'अप्रिल', 'मे', 'जुन', 'जुलाई', 'अगस्ट', 'सेप्टेम्बर'][m],
+    confirmed: 'बैंकले पुष्टि गरेको',
+    total: '6 महिनाको जम्मा',
+    proof: 'आय प्रमाणपत्र बनाउनुहोस्',
+    proofTitle: 'आय प्रमाणपत्र',
+    proofNote: 'भिसा वा बसाइ अवधि थप्दा प्रयोग गर्न सकिन्छ।',
+    remit: 'घर पैसा पठाउनुहोस्',
+    received: 'भर्खर आएको सेप्टेम्बरको तलब',
+    amount: 'पठाउने रकम',
+    recipient: 'प्रापक',
+    recipientName: 'आमा (नेपालको बैंक खाता)',
+    rate: 'विनिमय दर (उदाहरण)',
+    fee: 'शुल्क',
+    get: 'प्रापकले पाउने',
+    note: 'दर र शुल्क डेमोका लागि उदाहरण मात्र हुन्।',
+    send: 'पठाउनुहोस्',
+    notSent: 'डेमो: साँच्चै पैसा पठाइएको छैन।',
+  },
+  pt: {
+    archive: 'Holerites anteriores',
+    archiveSub: 'Pagamentos confirmados pelo banco',
+    month: m => ['', '', '', '', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro'][m],
+    confirmed: 'Confirmado pelo banco',
+    total: 'Total de 6 meses',
+    proof: 'Gerar comprovante de renda',
+    proofTitle: 'Comprovante de renda',
+    proofNote: 'Útil para renovar o visto ou a permanência.',
+    remit: 'Enviar dinheiro para casa',
+    received: 'Salário de setembro recebido',
+    amount: 'Valor a enviar',
+    recipient: 'Destinatário',
+    recipientName: 'Mãe (conta em banco no Brasil)',
+    rate: 'Câmbio (exemplo)',
+    fee: 'Tarifa',
+    get: 'Sua família recebe',
+    note: 'Câmbio e tarifa são apenas exemplos desta demonstração.',
+    send: 'Enviar',
+    notSent: 'Demonstração: nenhum dinheiro foi enviado.',
+  },
+};
+
 export const REPLIES = [
   {
     ko: '숙식비는 숙소와 식사 비용이에요. 서면으로 동의한 금액만큼만 빠져요.',

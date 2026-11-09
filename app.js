@@ -1,5 +1,5 @@
-import { PAYDAY, START_BALANCE, LOAN_FILL, INSURANCE_DUE, BANKS, EMPLOYEES, LANG_LABEL, LANG_NATIVE, I18N, COMPOSE, REPLIES } from './data.js?v=20261109e';
-import { won, num, slip, total, premiums, checks, allChecks } from './engine.js?v=20261109e';
+import { PAYDAY, START_BALANCE, LOAN_FILL, INSURANCE_DUE, BANKS, EMPLOYEES, LANG_LABEL, LANG_NATIVE, I18N, COMPOSE, ARCHIVE, REMIT, EXTRA, REPLIES } from './data.js?v=20261109g';
+import { won, num, slip, total, premiums, checks, allChecks } from './engine.js?v=20261109g';
 
 // 같은 앱을 세 가지로 연다. body의 data-mode로 고른다
 //   demo   (index.html):        사장님과 직원 화면 전체 + 데모 메뉴. 발표용
@@ -63,6 +63,8 @@ const icon = {
   check: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   chev: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   info: '<svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M10 9v5M10 6.2v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
+  doc: '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M7 3h7l4 4v14H7z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M14 3v4h4M10 12h5M10 16h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+  globe: '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>',
   warn: '<svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="10" cy="10" r="9" fill="#0B1F4F"/><path d="M10 5.5v5.5M10 14v.2" stroke="#FFE300" stroke-width="2" stroke-linecap="round"/></svg>',
 };
 
@@ -388,6 +390,10 @@ function payslip() {
         <div class="slip-row total"><span class="lbl"><b>${esc(L.net)}</b>${lang !== 'ko' ? `<small>${esc(K.net)}</small>` : ''}</span><span class="val">${num(s.net)}</span></div>
       </div>
       ${explain}
+      <div class="tiles2">
+        <button class="tile2" data-go="archive"><span class="tile2-icon">${icon.doc}</span><b>${esc(EXTRA[lang].archive)}</b></button>
+        <button class="tile2" data-go="remit"><span class="tile2-icon">${icon.globe}</span><b>${esc(EXTRA[lang].remit)}</b></button>
+      </div>
       <p class="fine">${esc(L.note)}${lang !== 'ko' ? `<br>${esc(K.note)}` : ''}</p>
     </main>
     <footer class="cta"><button class="btn primary" data-sheet="ask">${esc(L.ask)}</button></footer>
@@ -433,6 +439,79 @@ function compose() {
         </button>
       </div>
     </footer>
+  </section>`;
+}
+
+// 지난 명세서 보관함: 은행이 지급을 확인한 6개월 기록과 소득 확인서
+function archiveRows() {
+  const e = emp(state.empView);
+  const sept = { month: PAYDAY.month, net: slip(e).net, time: state.sent ? state.sent.time : '14:02', current: true };
+  return [...ARCHIVE, sept].reverse();
+}
+
+function archive() {
+  const lang = state.empLang[state.empView];
+  const X = EXTRA[lang];
+  const rows = archiveRows();
+  const sum = rows.reduce((a, r) => a + r.net, 0);
+  return `
+  <section class="screen">
+    ${nav(X.archive, 'payslip')}
+    <main class="content">
+      <p class="muted">${esc(X.archiveSub)}</p>
+      <div class="card gray archive">
+        ${rows.map(r => `
+          <${r.current ? 'button data-go="payslip"' : 'div'} class="arch-row ${r.current ? 'current' : ''}">
+            <span class="lbl"><b>${esc(X.month(r.month))}</b><small>${PAYDAY.year}.${r.month}.${PAYDAY.day} ${r.time}</small></span>
+            <span class="val"><b>${num(r.net)}</b><small>${checkDot}${esc(X.confirmed)}</small></span>
+          </${r.current ? 'button' : 'div'}>`).join('')}
+        <hr>
+        <div class="arch-row total"><span class="lbl"><b>${esc(X.total)}</b></span><span class="val"><b>${num(sum)}</b></span></div>
+      </div>
+      <p class="fine">${esc(X.proofNote)}</p>
+    </main>
+    <footer class="cta"><button class="btn primary" data-action="proof">${esc(X.proof)}</button></footer>
+  </section>`;
+}
+
+// 해외송금: 방금 들어온 급여에서 본국 가족에게. 보내기 직전에서 멈춘다
+function remitReceive(amount, lang) {
+  const c = REMIT.currency[lang];
+  const v = Math.max(0, amount - REMIT.fee) * c.rate;
+  return new Intl.NumberFormat(c.locale, { style: 'currency', currency: c.code, minimumFractionDigits: c.digits, maximumFractionDigits: c.digits }).format(v);
+}
+
+function remit() {
+  const e = emp(state.empView);
+  const lang = state.empLang[e.id];
+  const X = EXTRA[lang];
+  const c = REMIT.currency[lang];
+  const net = slip(e).net;
+  const amount = Math.min(state.remitAmount || REMIT.start, net);
+  const rate = new Intl.NumberFormat(c.locale, { maximumFractionDigits: 4 }).format(c.rate);
+  return `
+  <section class="screen">
+    ${nav(X.remit, 'payslip')}
+    <main class="content">
+      <div class="card gray">
+        <small>${esc(X.received)}</small>
+        <b class="big">${won(net)}</b>
+      </div>
+      <div class="card new">
+        ${badgeNew}
+        <label class="remit-field">${esc(X.amount)}
+          <span class="remit-input"><input type="text" inputmode="numeric" value="${num(amount)}" data-remit aria-label="${esc(X.amount)}"><em>원</em></span>
+        </label>
+        <div class="chips pick">${REMIT.quick.map(q => `<button data-action="remit-quick" data-val="${q}">${num(q)}</button>`).join('')}</div>
+        <hr>
+        ${kv(X.recipient, esc(X.recipientName), 'light')}
+        ${kv(X.rate, `1원 = ${rate} ${c.code}`, 'light')}
+        ${kv(X.fee, won(REMIT.fee), 'light')}
+        <div class="kv remit-get"><span>${esc(X.get)}</span><b id="remit-get">${remitReceive(amount, lang)}</b></div>
+      </div>
+      <p class="fine">${esc(X.note)}</p>
+    </main>
+    <footer class="cta"><button class="btn primary" data-action="remit-send">${esc(X.send)}</button></footer>
   </section>`;
 }
 
@@ -609,9 +688,9 @@ function start() {
 }
 
 const ROUTES = {
-  demo: { home, register, preview, confirm, done, records, chat, payslip, compose },
+  demo: { home, register, preview, confirm, done, records, chat, payslip, compose, archive, remit },
   owner: { home, register, preview, confirm, done, records },
-  worker: { start, chat, payslip, compose },
+  worker: { start, chat, payslip, compose, archive, remit },
 }[MODE];
 
 function route() {
@@ -721,6 +800,9 @@ const actions = {
   emp: el => { state.empView = el.dataset.emp; state.infoKey = 'lodging'; },
   reset: () => { state = freshState(); closeSheet(); go('home'); toast('처음부터 다시 시작해요'); },
   print: () => { renderPrint(); window.print(); return false; },
+  proof: () => { renderProof(); window.print(); return false; },
+  'remit-quick': el => { state.remitAmount = Number(el.dataset.val); },
+  'remit-send': () => { toast(EXTRA[state.empLang[state.empView]].notSent); return false; },
 };
 
 document.addEventListener('click', ev => {
@@ -747,6 +829,20 @@ document.addEventListener('click', ev => {
     return;
   }
   if (el.dataset.close !== undefined) closeSheet();
+});
+
+// 송금 금액을 바꾸면 받는 금액만 다시 계산한다 (입력 중인 칸은 다시 그리지 않는다)
+document.addEventListener('input', ev => {
+  const box = ev.target.closest('[data-remit]');
+  if (!box) return;
+  const net = slip(emp(state.empView)).net;
+  const raw = Number(box.value.replace(/[^\d]/g, '')) || 0;
+  const v = Math.min(raw, net);
+  if (raw > net) box.value = num(net); // 받은 급여보다 많이는 못 보낸다
+  state.remitAmount = v;
+  const out = document.getElementById('remit-get');
+  if (out) out.textContent = remitReceive(v, state.empLang[state.empView]);
+  save();
 });
 
 // 메시지 입력창을 내용 길이에 맞춰 늘린다 (최대 높이는 CSS max-height)
@@ -789,6 +885,24 @@ function renderPrint() {
     </table>
     ${s && s.ins ? `<p>4대보험료 ${num(s.ins.amount)}원: ${s.ins.mode === 'now' ? '급여일에 함께 납부' : `${INSURANCE_DUE} 자동 납부 예약`}</p>` : ''}
     <p>이 문서는 공모전 PoC 데모가 만든 예시 기록이에요.</p>`;
+}
+
+// 직원용 소득 확인서: 은행이 지급을 확인한 6개월 기록 (체류 연장, 비자 서류용)
+function renderProof() {
+  const e = emp(state.empView);
+  const lang = state.empLang[e.id];
+  const X = EXTRA[lang];
+  const rows = archiveRows().reverse();
+  const sum = rows.reduce((a, r) => a + r.net, 0);
+  document.getElementById('print-root').innerHTML = `
+    <h1>급여 지급 확인서${X.proofTitle ? ` (${esc(X.proofTitle)})` : ''}</h1>
+    <p>이름: ${esc(e.name)} · 기간: ${PAYDAY.year}.${rows[0].month} ~ ${PAYDAY.year}.${rows[rows.length - 1].month} · 확인 기관: ${esc(bank().name)} (PoC 예시)</p>
+    <table>
+      <thead><tr><th>월</th><th>지급일</th><th>은행 확인 시각</th><th>실지급액(원)</th></tr></thead>
+      <tbody>${rows.map(r => `<tr><td>${r.month}월</td><td>${PAYDAY.year}.${r.month}.${PAYDAY.day}</td><td>${r.time}</td><td>${num(r.net)}</td></tr>`).join('')}</tbody>
+      <tfoot><tr><td colspan="3">합계</td><td>${num(sum)}</td></tr></tfoot>
+    </table>
+    <p>이 문서는 은행이 실제 이체로 확인한 급여 지급 기록을 모은 것이에요. 공모전 PoC 데모가 만든 예시 문서예요.</p>`;
 }
 
 // 직원 화면은 급여가 이미 나간 9월 25일 상태에서 시작한다. ?lang=pt 처럼 언어를 붙이면 언어 고르기를 건너뛴다
