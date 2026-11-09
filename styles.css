@@ -227,6 +227,9 @@ svg { display: block; }
 .seg button { text-align: center; padding: 8px 4px; border-radius: 8px; font-size: 13px; color: var(--ink); }
 .seg button.on { background: #fff; font-weight: 600; box-shadow: 0 1px 2px rgba(0, 0, 0, .08); }
 .reset { height: 44px; font-size: 14px; margin: 4px 0 12px; }
+.ins-seg { margin-top: 4px; background: var(--card); }
+.ins-seg button { font-size: 14px; padding: 10px 4px; }
+.ins-seg button.on { color: var(--navy); }
 .sheet .scene-list button.on { background: var(--card); }
 .sheet .seg { background: var(--card); }
 

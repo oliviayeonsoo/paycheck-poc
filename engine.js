@@ -17,6 +17,13 @@ export function total(employees) {
   return employees.reduce((sum, e) => sum + slip(e).net, 0);
 }
 
+// 4대보험 고지액: 직원 몫(명세서에서 공제한 보험료)과 사장님 몫을 더한 금액
+export function premiums(employees) {
+  const worker = employees.reduce((sum, e) => sum + e.insurance, 0);
+  const owner = employees.reduce((sum, e) => sum + e.employerIns, 0);
+  return { worker, owner, total: worker + owner };
+}
+
 export function checks(e) {
   const issues = [];
   const hourly = e.base / e.hours;

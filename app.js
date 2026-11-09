@@ -1,5 +1,5 @@
-import { PAYDAY, START_BALANCE, LOAN_FILL, BANKS, EMPLOYEES, LANG_LABEL, LANG_NATIVE, I18N, REPLIES } from './data.js';
-import { won, num, slip, total, checks, allChecks } from './engine.js';
+import { PAYDAY, START_BALANCE, LOAN_FILL, INSURANCE_DUE, BANKS, EMPLOYEES, LANG_LABEL, LANG_NATIVE, I18N, REPLIES } from './data.js';
+import { won, num, slip, total, premiums, checks, allChecks } from './engine.js';
 
 const STORE = 'paycheck-poc-v1';
 const $app = document.getElementById('app');
@@ -18,6 +18,7 @@ function freshState() {
     loanUsed: false,
     employees: EMPLOYEES.map(e => ({ ...e })),
     sendSlip: true,
+    insPay: 'due', // 'due': 납부기한에 자동 납부, 'now': 급여와 함께 지금 납부
     sent: null,
     viewed: { a: false, b: true, c: true },
     inquiries: [{ emp: 'c', key: 'lodgingQ', reply: null }],
@@ -43,6 +44,8 @@ function save() {
 
 const bank = () => BANKS.find(b => b.id === state.bank) || BANKS[0];
 const emp = id => state.employees.find(e => e.id === id);
+// 오늘 계좌에서 나갈 돈: 급여, 그리고 지금 함께 내기로 했으면 4대보험료
+const outflow = () => total(state.employees) + (state.insPay === 'now' ? premiums(state.employees).total : 0);
 
 /* ---------- 공통 조각 ---------- */
 
@@ -187,12 +190,39 @@ function confirm() {
       ${warn}
       <div class="check-line">${minwageIssue ? icon.warn : checkDot}<span>${minwageIssue ? '최저임금을 다시 확인해 주세요' : '최저임금 확인 완료'}</span></div>
       <div class="row-between plain"><span>명세서 함께 보내기</span>${toggle(state.sendSlip, 'toggle-slip', '명세서 함께 보내기')}</div>
+      ${insuranceCard()}
     </main>
     <footer class="cta two">
       <button class="btn secondary" data-sheet="edit">수정하기</button>
       <button class="btn primary" data-action="send">${issues.length ? '그대로 보내기' : '보내기'}</button>
     </footer>
   </section>`;
+}
+
+function insuranceCard() {
+  const p = premiums(state.employees);
+  const modes = [['due', `${INSURANCE_DUE} 자동 납부`], ['now', '지금 함께 내기']];
+  return `
+      <div class="card new">
+        ${badgeNew}
+        <b class="card-title">이번 달 4대보험료도 챙길게요</b>
+        <small>국민건강보험공단 통합 고지 기준</small>
+        ${kv('직원 몫 (급여에서 공제)', won(p.worker), 'light')}
+        ${kv('사장님 몫', won(p.owner), 'light')}
+        <hr>
+        ${kv('공단에 낼 금액', won(p.total))}
+        <div class="seg ins-seg" role="radiogroup" aria-label="4대보험료 납부 시점">
+          ${modes.map(([m, label]) => `<button role="radio" aria-checked="${state.insPay === m}" class="${state.insPay === m ? 'on' : ''}" data-action="ins-pay" data-mode="${m}">${label}</button>`).join('')}
+        </div>
+        <small>직원 몫은 명세서의 보험료 공제와 같은 금액이에요. 외국인 직원은 국적에 따라 국민연금 적용이 달라서, 공단 고지액을 그대로 반영해요.</small>
+      </div>`;
+}
+
+function insuranceLine(s) {
+  if (!s.ins) return '';
+  return s.ins.mode === 'now'
+    ? `<div class="check-line small">${checkDot}<span>4대보험료 ${won(s.ins.amount)}도 공단에 함께 냈어요</span></div>`
+    : `<div class="check-line small">${checkDot}<span>4대보험료 ${won(s.ins.amount)}은 ${INSURANCE_DUE}에 자동으로 내요</span></div>`;
 }
 
 function done() {
@@ -211,6 +241,7 @@ function done() {
         ${rows}
         <hr>
         <div class="check-line small">${checkDot}<span>은행이 ${PAYDAY.month}월 ${PAYDAY.day}일 ${s.time} 지급을 확인했어요</span></div>
+        ${insuranceLine(s)}
       </div>
       ${s.slip ? '<button class="link" data-go="chat">직원 휴대폰에서 보기</button>' : ''}
     </main>
@@ -248,6 +279,7 @@ function records() {
         ${badgeNew}
         <b class="card-title">열람과 대조</b>
         ${state.employees.map(e => `<div class="kv light"><span>${esc(e.name)}</span>${status(e)}</div>`).join('')}
+        ${state.sent && state.sent.ins ? `<hr>${kv('4대보험료', state.sent.ins.mode === 'now' ? `<span class="navy">${won(state.sent.ins.amount)} 납부 완료</span>` : `${INSURANCE_DUE} 자동 납부 예약`, 'light')}` : ''}
       </div>
       ${inquiries}
       <button class="card new row-between" data-sheet="benefit">
@@ -359,7 +391,7 @@ function payslip() {
 
 function sheetHtml(kind, data) {
   if (kind === 'loan') {
-    const short = Math.max(0, total(state.employees) - state.balance);
+    const short = Math.max(0, outflow() - state.balance);
     return `
       <h3>사업자 운전자금</h3>
       <p class="desc">급여일 잔액 부족분을 바로 채울 수 있어요.</p>
@@ -515,14 +547,19 @@ function route() {
   return ROUTES[r] ? r : 'home';
 }
 
+let lastRoute = null;
+
 function render() {
   const r = route();
   if (r === 'payslip' && !state.viewed[state.empView] && state.sent) {
     state.viewed[state.empView] = true;
     save();
   }
+  // 같은 화면을 다시 그릴 때(토글, 선택)는 스크롤 위치를 지키고, 화면이 바뀔 때만 맨 위로
+  const keepScroll = r === lastRoute ? ($app.querySelector('.content')?.scrollTop || 0) : 0;
+  lastRoute = r;
   $app.innerHTML = ROUTES[r]();
-  $app.querySelector('.content')?.scrollTo(0, 0);
+  $app.querySelector('.content')?.scrollTo(0, keepScroll);
   document.body.dataset.route = r;
   $guide.innerHTML = guideHtml();
   const demoSheet = $sheet.classList.contains('open') && $sheet.dataset.kind === 'demo' && $sheet.querySelector('.sheet');
@@ -546,9 +583,10 @@ function nowTime() {
 const actions = {
   'toggle-linked': () => { state.linked = !state.linked; },
   'toggle-slip': () => { state.sendSlip = !state.sendSlip; },
+  'ins-pay': el => { state.insPay = el.dataset.mode; },
   register: () => { state.registered = true; toast('외국인 직원 3명을 등록했어요'); go('preview'); },
   loan: () => {
-    const short = Math.max(0, total(state.employees) - state.balance);
+    const short = Math.max(0, outflow() - state.balance);
     state.balance += Math.max(short, LOAN_FILL);
     state.loanUsed = true;
     closeSheet();
@@ -564,13 +602,14 @@ const actions = {
   },
   send: () => {
     const t = total(state.employees);
-    if (state.balance < t) {
-      toast(`잔액이 ${won(t - state.balance)} 부족해요`);
+    const out = outflow();
+    if (state.balance < out) {
+      toast(`잔액이 ${won(out - state.balance)} 부족해요`);
       openSheet('loan');
       return false;
     }
-    state.balance -= t;
-    state.sent = { total: t, time: nowTime(), slip: state.sendSlip };
+    state.balance -= out;
+    state.sent = { total: t, time: nowTime(), slip: state.sendSlip, ins: { mode: state.insPay, amount: premiums(state.employees).total } };
     state.viewed = { a: false, b: true, c: true };
     go('done');
   },
@@ -635,6 +674,7 @@ function renderPrint() {
         return `<tr><td>${esc(e.name)}</td><td>${num(p.base)}</td><td>${num(p.lodging)}</td><td>${num(p.insurance)}</td><td>${num(p.net)}</td><td>${LANG_LABEL[e.lang]}</td><td>${state.viewed[e.id] ? '완료' : '대기'}</td></tr>`;
       }).join('')}</tbody>
     </table>
+    ${s && s.ins ? `<p>4대보험료 ${num(s.ins.amount)}원: ${s.ins.mode === 'now' ? '급여일에 함께 납부' : `${INSURANCE_DUE} 자동 납부 예약`}</p>` : ''}
     <p>이 문서는 공모전 PoC 데모가 만든 예시 기록이에요.</p>`;
 }
 
@@ -651,7 +691,7 @@ function openWorkerDemo() {
   if (!state.sent) {
     const t = total(state.employees);
     state.balance = Math.max(state.balance, t) - t;
-    state.sent = { total: t, time: '14:02', slip: true };
+    state.sent = { total: t, time: '14:02', slip: true, ins: { mode: 'due', amount: premiums(state.employees).total } };
   }
   save();
   if (!location.hash) history.replaceState(null, '', location.search + '#/chat');

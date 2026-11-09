@@ -11,24 +11,28 @@ export const START_BALANCE = 8320000;
 // 운전자금으로 채우는 기본 금액
 export const LOAN_FILL = 1200000;
 
+// 4대보험료 납부기한 (급여 달의 다음 달 10일)
+export const INSURANCE_DUE = '10월 10일';
+
 export const BANKS = [
   { id: 'kbank', name: '케이뱅크', short: 'K' },
   { id: 'kakaobank', name: '카카오뱅크', short: 'k' },
 ];
 
 // lodging: 이번 달 숙식비 공제 입력값, lodgingPrev: 지난달 공제액, lodgingConsent: 서면 동의 금액
+// insurance: 4대보험 직원 몫(급여에서 공제), employerIns: 사장님 몫. 둘을 합친 금액이 공단 고지액이다
 export const EMPLOYEES = [
   {
     id: 'a', name: '응우옌 반 A', nation: '베트남', lang: 'vi', visa: 'E-9', account: 'OO은행 1234',
-    base: 2600000, hours: 209, lodging: 350000, lodgingPrev: 150000, lodgingConsent: 300000, insurance: 70000,
+    base: 2600000, hours: 209, lodging: 350000, lodgingPrev: 150000, lodgingConsent: 300000, insurance: 70000, employerIns: 77000,
   },
   {
     id: 'b', name: '쩐 티 B', nation: '베트남', lang: 'vi', visa: 'E-9', account: 'OO은행 5678',
-    base: 2650000, hours: 209, lodging: 150000, lodgingPrev: 150000, lodgingConsent: 300000, insurance: 80000,
+    base: 2650000, hours: 209, lodging: 150000, lodgingPrev: 150000, lodgingConsent: 300000, insurance: 80000, employerIns: 88000,
   },
   {
     id: 'c', name: '람 C', nation: '네팔', lang: 'ne', visa: 'E-9', account: 'OO은행 9012',
-    base: 4950000, hours: 209, lodging: 0, lodgingPrev: 0, lodgingConsent: 0, insurance: 230000,
+    base: 4950000, hours: 209, lodging: 0, lodgingPrev: 0, lodgingConsent: 0, insurance: 230000, employerIns: 253000,
   },
 ];
 
