@@ -1,5 +1,5 @@
-import { PAYDAY, START_BALANCE, LOAN_FILL, INSURANCE_DUE, BANKS, EMPLOYEES, LANG_LABEL, LANG_NATIVE, I18N, COMPOSE, ARCHIVE, OWNER_ARCHIVE, REMIT, EXTRA, REPLIES } from './data.js?v=20261109h';
-import { won, num, slip, total, premiums, checks, allChecks } from './engine.js?v=20261109h';
+import { PAYDAY, START_BALANCE, LOAN_FILL, INSURANCE_DUE, BANKS, EMPLOYEES, LANG_LABEL, LANG_NATIVE, I18N, COMPOSE, ARCHIVE, OWNER_ARCHIVE, REMIT, EXTRA, REPLIES } from './data.js?v=20261109i';
+import { won, num, slip, total, premiums, checks, allChecks } from './engine.js?v=20261109i';
 
 // 같은 앱을 세 가지로 연다. body의 data-mode로 고른다
 //   demo   (index.html):        사장님과 직원 화면 전체 + 데모 메뉴. 발표용
@@ -720,8 +720,12 @@ const SCENES = [
   ['confirm', '3', '이체 확인', '점검'],
   ['done', '4', '이체 완료', '지급'],
   ['records', '5', '급여 기록', '증명과 보상'],
+  ['slips', '5-1', '직원별 명세서 보관함', '증명과 보상'],
   ['chat', 'E1', '카카오톡 알림', '직원'],
   ['payslip', 'E2', '모국어 명세서', '직원'],
+  ['compose', 'E3', '사장님께 문의', '직원'],
+  ['archive', 'E4', '지난 명세서', '직원'],
+  ['remit', 'E5', '본국으로 송금', '직원'],
 ];
 
 function guideHtml(inSheet = false) {
