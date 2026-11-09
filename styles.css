@@ -177,6 +177,23 @@ svg { display: block; }
 .bubble-body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 8px; }
 .amount { font-size: 24px; font-weight: 800; }
 
+/* 사장님 카톡방: 직원이 보낼 메시지 초안 */
+.nav-title .sub { display: block; font-size: 12px; font-weight: 500; color: #33415c; }
+.sys-bubble { align-self: center; max-width: 320px; background: rgba(255, 255, 255, .55); border-radius: 12px; padding: 8px 12px; font-size: 12px; line-height: 1.5; color: #33415c; text-align: center; }
+.composer { flex: none; background: #fff; padding: 10px 12px calc(10px + var(--safe-b)); border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 8px; }
+.attach { display: flex; align-items: center; gap: 10px; background: var(--card); border-radius: 12px; padding: 8px 12px; }
+.attach > span:last-child { display: flex; flex-direction: column; gap: 2px; }
+.attach b { font-size: 13px; font-weight: 600; }
+.attach small { font-size: 12px; }
+.attach-icon { color: var(--navy); }
+.tr-preview { background: var(--yellow-soft); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }
+.tr-preview small { font-size: 12px; color: #6b5a00; }
+.tr-preview p { font-size: 14px; line-height: 1.5; }
+.draft-row { display: flex; align-items: flex-end; gap: 8px; }
+.draft-row textarea { flex: 1; min-height: 46px; max-height: 180px; overflow-y: auto; border: 0; border-radius: 18px; background: var(--card); padding: 12px 14px; font: inherit; font-size: 15px; line-height: 1.45; resize: none; color: var(--ink); }
+.draft-row textarea:focus { outline: 2px solid var(--yellow); }
+.send-btn { width: 46px; height: 46px; flex: none; border-radius: 50%; background: var(--yellow); color: var(--navy); display: grid; place-items: center; }
+
 .slip { gap: 4px; }
 .slip-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px; margin: 0 -8px; border-radius: 10px; width: calc(100% + 16px); }
 .slip-row .lbl { display: flex; flex-direction: column; gap: 2px; text-align: left; }

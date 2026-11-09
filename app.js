@@ -1,5 +1,5 @@
-import { PAYDAY, START_BALANCE, LOAN_FILL, INSURANCE_DUE, BANKS, EMPLOYEES, LANG_LABEL, LANG_NATIVE, I18N, REPLIES } from './data.js?v=20261109';
-import { won, num, slip, total, premiums, checks, allChecks } from './engine.js?v=20261109';
+import { PAYDAY, START_BALANCE, LOAN_FILL, INSURANCE_DUE, BANKS, EMPLOYEES, LANG_LABEL, LANG_NATIVE, I18N, COMPOSE, REPLIES } from './data.js?v=20261109d';
+import { won, num, slip, total, premiums, checks, allChecks } from './engine.js?v=20261109d';
 
 // 같은 앱을 세 가지로 연다. body의 data-mode로 고른다
 //   demo   (index.html):        사장님과 직원 화면 전체 + 데모 메뉴. 발표용
@@ -394,6 +394,48 @@ function payslip() {
   </section>`;
 }
 
+// 사장님과의 카톡방. 고른 질문이 직원 언어로 입력창에 써져 있고, 사장님께 보일 한국어가 위에 보인다
+function compose() {
+  const e = emp(state.empView);
+  if (!state.draft) {
+    const lang = state.empLang[e.id];
+    const text = COMPOSE[lang].msg.lodgingQ(slip(e));
+    state.draft = { key: 'lodgingQ', lang, text, original: text };
+  }
+  const d = state.draft;
+  const C = COMPOSE[d.lang];
+  const L = I18N[d.lang];
+  const s = slip(e);
+  const edited = d.text !== d.original;
+  const attachLine = { lodgingQ: `${L.lodging} -${num(s.lodging)}`, diff: `${L.net} ${num(s.net)}` }[d.key];
+  return `
+  <section class="screen kakao">
+    <header class="nav kakao-nav">
+      <button class="icon-btn" data-go="payslip" aria-label="뒤로">${icon.back}</button>
+      <span class="nav-title left">${esc(C.boss)}<small class="sub">${esc(C.autoTr)}</small></span>
+      <span class="icon-btn" aria-hidden="true"></span>
+    </header>
+    <main class="content">
+      <div class="date-chip">${PAYDAY.year}년 ${PAYDAY.month}월 ${PAYDAY.day}일 ${PAYDAY.weekday}</div>
+      <p class="sys-bubble">${esc(C.hint)}</p>
+    </main>
+    <footer class="composer">
+      ${attachLine ? `<div class="attach"><span class="attach-icon" aria-hidden="true">${icon.info}</span><span><b>${esc(C.attach)}</b><small>${esc(attachLine)}</small></span></div>` : ''}
+      ${d.lang !== 'ko' ? `
+      <div class="tr-preview">
+        <small>${esc(C.preview)}</small>
+        <p id="tr-preview-text" class="${edited ? 'muted' : ''}">${esc(edited ? C.edited : COMPOSE.ko.msg[d.key](s))}</p>
+      </div>` : ''}
+      <div class="draft-row">
+        <textarea data-draft rows="3" placeholder="${esc(C.placeholder)}" aria-label="${esc(C.placeholder)}">${esc(d.text)}</textarea>
+        <button class="send-btn" data-action="send-msg" aria-label="${esc(C.send)}">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 19V6M6 11l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </footer>
+  </section>`;
+}
+
 /* ---------- 시트 ---------- */
 
 function sheetHtml(kind, data) {
@@ -567,9 +609,9 @@ function start() {
 }
 
 const ROUTES = {
-  demo: { home, register, preview, confirm, done, records, chat, payslip },
+  demo: { home, register, preview, confirm, done, records, chat, payslip, compose },
   owner: { home, register, preview, confirm, done, records },
-  worker: { start, chat, payslip },
+  worker: { start, chat, payslip, compose },
 }[MODE];
 
 function route() {
@@ -593,6 +635,8 @@ function render() {
   $app.querySelector('.content')?.scrollTo(0, keepScroll);
   document.body.dataset.route = r;
   if (MODE === 'demo') $guide.innerHTML = guideHtml();
+  const draftBox = $app.querySelector('[data-draft]');
+  if (draftBox) fitDraft(draftBox);
   const demoSheet = $sheet.classList.contains('open') && $sheet.dataset.kind === 'demo' && $sheet.querySelector('.sheet');
   if (demoSheet) demoSheet.innerHTML = `<span class="grip" aria-hidden="true"></span>${sheetHtml('demo')}`;
 }
@@ -650,10 +694,25 @@ const actions = {
     toast('번역해서 보냈어요');
   },
   ask: el => {
+    // 질문을 고르면 바로 보내지 않고, 사장님 카톡방에 메시지 초안을 써 둔다
     const e = emp(state.empView);
-    state.inquiries.push({ emp: e.id, key: el.dataset.key, reply: null, lang: state.empLang[e.id] });
+    const lang = state.empLang[e.id];
+    const text = COMPOSE[lang].msg[el.dataset.key](slip(e));
+    state.draft = { key: el.dataset.key, lang, text, original: text };
     closeSheet();
-    toast(I18N[state.empLang[e.id]].sent);
+    go('compose');
+    return false;
+  },
+  'send-msg': () => {
+    const d = state.draft;
+    if (!d) return false;
+    // 직원 전용 페이지는 인터뷰용이라 보내기 직전에서 멈춘다
+    if (WORKER) { toast(COMPOSE[d.lang].notSent); return false; }
+    state.inquiries.push({ emp: state.empView, key: d.key, reply: null, lang: d.lang });
+    state.draft = null;
+    toast(I18N[d.lang].sent);
+    go('payslip');
+    return false;
   },
   lang: el => { state.empLang[state.empView] = el.dataset.lang; closeSheet(); },
   info: el => { state.infoKey = state.infoKey === el.dataset.key ? null : el.dataset.key; },
@@ -687,6 +746,28 @@ document.addEventListener('click', ev => {
     return;
   }
   if (el.dataset.close !== undefined) closeSheet();
+});
+
+// 메시지 입력창을 내용 길이에 맞춰 늘린다 (최대 높이는 CSS max-height)
+function fitDraft(box) {
+  box.style.height = 'auto';
+  box.style.height = box.scrollHeight + 'px';
+}
+
+// 초안을 직접 고치면, 사장님께 보일 한국어 미리보기 대신 "보낼 때 번역돼요" 안내로 바꾼다
+document.addEventListener('input', ev => {
+  const box = ev.target.closest('[data-draft]');
+  if (!box || !state.draft) return;
+  fitDraft(box);
+  state.draft.text = box.value;
+  const preview = document.getElementById('tr-preview-text');
+  if (preview) {
+    const edited = box.value !== state.draft.original;
+    const C = COMPOSE[state.draft.lang];
+    preview.textContent = edited ? C.edited : COMPOSE.ko.msg[state.draft.key](slip(emp(state.empView)));
+    preview.classList.toggle('muted', edited);
+  }
+  save();
 });
 
 document.getElementById('demo-tab').addEventListener('click', () => openSheet('demo'));

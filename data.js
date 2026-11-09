@@ -148,6 +148,76 @@ export const I18N = {
 };
 
 // 사장님 답장 템플릿과 직원 언어로 보이는 미리보기
+// 직원이 사장님께 보내는 카톡 초안. 질문을 고르면 명세서 금액을 넣어 메시지를 미리 써 준다
+// 금액은 그 언어의 천 단위 표기로 쓴다 (포르투갈어, 베트남어는 150.000)
+const n = (v, locale = 'ko-KR') => v.toLocaleString(locale);
+export const COMPOSE = {
+  ko: {
+    boss: '사장님',
+    autoTr: '한국어로 그대로 보내요',
+    hint: '메시지는 사장님께 그대로 전달돼요.',
+    attach: '첨부: 9월 급여명세서',
+    preview: '',
+    edited: '',
+    placeholder: '메시지를 입력하세요',
+    send: '보내기',
+    notSent: '데모라서 실제로 보내지는 않아요',
+    msg: {
+      lodgingQ: s => `사장님, 9월 명세서에서 숙식비 ${n(s.lodging)}원이 빠졌는데 어떤 비용인지 알려 주실 수 있나요?`,
+      diff: s => `사장님, 9월 실수령액이 ${n(s.net)}원인데 지난달과 왜 다른지 궁금해요.`,
+      hours: () => '사장님, 9월 제 근무 시간 기록을 볼 수 있을까요?',
+    },
+  },
+  vi: {
+    boss: 'Chủ cửa hàng',
+    autoTr: 'Tự động dịch sang tiếng Hàn',
+    hint: 'Tin nhắn của bạn sẽ được dịch sang tiếng Hàn rồi gửi cho chủ cửa hàng.',
+    attach: 'Đính kèm: Bảng lương tháng 9',
+    preview: 'Chủ cửa hàng sẽ thấy (tiếng Hàn)',
+    edited: 'Câu bạn tự viết sẽ được dịch khi gửi.',
+    placeholder: 'Nhập tin nhắn',
+    send: 'Gửi',
+    notSent: 'Bản demo: tin nhắn chưa được gửi thật.',
+    msg: {
+      lodgingQ: s => `Chào chủ, trong bảng lương tháng 9 có trừ tiền ăn ở ${n(s.lodging, 'vi-VN')} won. Anh/chị giải thích giúp em khoản này là gì được không ạ?`,
+      diff: s => `Chào chủ, lương thực nhận tháng 9 của em là ${n(s.net, 'vi-VN')} won. Sao lại khác tháng trước ạ?`,
+      hours: () => 'Chào chủ, em có thể xem bảng chấm công tháng 9 của em được không ạ?',
+    },
+  },
+  ne: {
+    boss: 'साहू',
+    autoTr: 'कोरियालीमा स्वतः अनुवाद',
+    hint: 'तपाईंको सन्देश कोरियालीमा अनुवाद गरेर साहूलाई पठाइन्छ।',
+    attach: 'संलग्न: सेप्टेम्बरको तलब विवरण',
+    preview: 'साहूले देख्ने (कोरियाली)',
+    edited: 'तपाईंले आफैं लेखेको वाक्य पठाउँदा अनुवाद हुन्छ।',
+    placeholder: 'सन्देश लेख्नुहोस्',
+    send: 'पठाउनुहोस्',
+    notSent: 'डेमो: सन्देश साँच्चै पठाइएको छैन।',
+    msg: {
+      lodgingQ: s => `साहूजी, सेप्टेम्बरको तलबबाट बसोबास र खाना खर्च ${n(s.lodging)} वन काटिएको छ। यो के खर्च हो भनेर बताइदिनुहुन्छ?`,
+      diff: s => `साहूजी, सेप्टेम्बरको मेरो खुद तलब ${n(s.net)} वन छ। यो गत महिनाभन्दा किन फरक छ?`,
+      hours: () => 'साहूजी, के म सेप्टेम्बरको मेरो काम गरेको घण्टाको विवरण हेर्न सक्छु?',
+    },
+  },
+  pt: {
+    boss: 'Chefe',
+    autoTr: 'Tradução automática para coreano',
+    hint: 'Sua mensagem será traduzida para o coreano e enviada ao seu chefe.',
+    attach: 'Anexo: Holerite de setembro',
+    preview: 'O que seu chefe verá (em coreano)',
+    edited: 'O texto que você escrever será traduzido ao enviar.',
+    placeholder: 'Digite uma mensagem',
+    send: 'Enviar',
+    notSent: 'Demonstração: a mensagem não foi enviada de verdade.',
+    msg: {
+      lodgingQ: s => `Oi, chefe. No holerite de setembro foram descontados ${n(s.lodging, 'pt-BR')} wons de moradia e alimentação. Pode me explicar o que é esse desconto?`,
+      diff: s => `Oi, chefe. Meu salário líquido de setembro foi ${n(s.net, 'pt-BR')} wons. Por que está diferente do mês passado?`,
+      hours: () => 'Oi, chefe. Posso ver o registro das minhas horas trabalhadas em setembro?',
+    },
+  },
+};
+
 export const REPLIES = [
   {
     ko: '숙식비는 숙소와 식사 비용이에요. 서면으로 동의한 금액만큼만 빠져요.',
