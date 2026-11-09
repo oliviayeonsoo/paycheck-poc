@@ -1,5 +1,5 @@
-import { PAYDAY, START_BALANCE, LOAN_FILL, INSURANCE_DUE, BANKS, EMPLOYEES, LANG_LABEL, LANG_NATIVE, I18N, COMPOSE, REPLIES } from './data.js?v=20261109d';
-import { won, num, slip, total, premiums, checks, allChecks } from './engine.js?v=20261109d';
+import { PAYDAY, START_BALANCE, LOAN_FILL, INSURANCE_DUE, BANKS, EMPLOYEES, LANG_LABEL, LANG_NATIVE, I18N, COMPOSE, REPLIES } from './data.js?v=20261109e';
+import { won, num, slip, total, premiums, checks, allChecks } from './engine.js?v=20261109e';
 
 // 같은 앱을 세 가지로 연다. body의 data-mode로 고른다
 //   demo   (index.html):        사장님과 직원 화면 전체 + 데모 메뉴. 발표용
@@ -394,12 +394,12 @@ function payslip() {
   </section>`;
 }
 
-// 사장님과의 카톡방. 고른 질문이 직원 언어로 입력창에 써져 있고, 사장님께 보일 한국어가 위에 보인다
+// 사장님과의 카톡방. 사장님께 보낼 한국어 메시지가 입력창에 써져 있고, 위 노란 상자에 직원 언어로 뜻이 보인다
 function compose() {
   const e = emp(state.empView);
   if (!state.draft) {
     const lang = state.empLang[e.id];
-    const text = COMPOSE[lang].msg.lodgingQ(slip(e));
+    const text = COMPOSE.ko.msg.lodgingQ(slip(e));
     state.draft = { key: 'lodgingQ', lang, text, original: text };
   }
   const d = state.draft;
@@ -424,7 +424,7 @@ function compose() {
       ${d.lang !== 'ko' ? `
       <div class="tr-preview">
         <small>${esc(C.preview)}</small>
-        <p id="tr-preview-text" class="${edited ? 'muted' : ''}">${esc(edited ? C.edited : COMPOSE.ko.msg[d.key](s))}</p>
+        <p id="tr-preview-text" class="${edited ? 'muted' : ''}">${esc(edited ? C.edited : C.msg[d.key](s))}</p>
       </div>` : ''}
       <div class="draft-row">
         <textarea data-draft rows="3" placeholder="${esc(C.placeholder)}" aria-label="${esc(C.placeholder)}">${esc(d.text)}</textarea>
@@ -697,7 +697,8 @@ const actions = {
     // 질문을 고르면 바로 보내지 않고, 사장님 카톡방에 메시지 초안을 써 둔다
     const e = emp(state.empView);
     const lang = state.empLang[e.id];
-    const text = COMPOSE[lang].msg[el.dataset.key](slip(e));
+    // 사장님께 가는 메시지는 한국어. 직원 언어 문장은 뜻을 보여 주는 데만 쓴다
+    const text = COMPOSE.ko.msg[el.dataset.key](slip(e));
     state.draft = { key: el.dataset.key, lang, text, original: text };
     closeSheet();
     go('compose');
@@ -754,7 +755,7 @@ function fitDraft(box) {
   box.style.height = box.scrollHeight + 'px';
 }
 
-// 초안을 직접 고치면, 사장님께 보일 한국어 미리보기 대신 "보낼 때 번역돼요" 안내로 바꾼다
+// 한국어 초안을 직접 고치면, 노란 상자의 뜻풀이 대신 "한국어를 고쳤어요" 안내로 바꾼다
 document.addEventListener('input', ev => {
   const box = ev.target.closest('[data-draft]');
   if (!box || !state.draft) return;
@@ -764,7 +765,7 @@ document.addEventListener('input', ev => {
   if (preview) {
     const edited = box.value !== state.draft.original;
     const C = COMPOSE[state.draft.lang];
-    preview.textContent = edited ? C.edited : COMPOSE.ko.msg[state.draft.key](slip(emp(state.empView)));
+    preview.textContent = edited ? C.edited : C.msg[state.draft.key](slip(emp(state.empView)));
     preview.classList.toggle('muted', edited);
   }
   save();

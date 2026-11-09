@@ -148,7 +148,8 @@ export const I18N = {
 };
 
 // 사장님 답장 템플릿과 직원 언어로 보이는 미리보기
-// 직원이 사장님께 보내는 카톡 초안. 질문을 고르면 명세서 금액을 넣어 메시지를 미리 써 준다
+// 직원이 사장님께 보내는 카톡 초안. 질문을 고르면 명세서 금액을 넣은 한국어 메시지를 입력창에 써 두고,
+// 노란 상자에 직원 언어로 뜻을 보여 준다. preview는 그 상자의 제목, edited는 한국어를 직접 고쳤을 때 안내
 // 금액은 그 언어의 천 단위 표기로 쓴다 (포르투갈어, 베트남어는 150.000)
 const n = (v, locale = 'ko-KR') => v.toLocaleString(locale);
 export const COMPOSE = {
@@ -170,11 +171,11 @@ export const COMPOSE = {
   },
   vi: {
     boss: 'Chủ cửa hàng',
-    autoTr: 'Tự động dịch sang tiếng Hàn',
-    hint: 'Tin nhắn của bạn sẽ được dịch sang tiếng Hàn rồi gửi cho chủ cửa hàng.',
+    autoTr: 'Gửi bằng tiếng Hàn',
+    hint: 'Tin nhắn được gửi cho chủ cửa hàng bằng tiếng Hàn. Ô màu vàng cho bạn biết ý nghĩa bằng tiếng Việt.',
     attach: 'Đính kèm: Bảng lương tháng 9',
-    preview: 'Chủ cửa hàng sẽ thấy (tiếng Hàn)',
-    edited: 'Câu bạn tự viết sẽ được dịch khi gửi.',
+    preview: 'Nghĩa bằng tiếng Việt',
+    edited: 'Bạn đã sửa câu tiếng Hàn.',
     placeholder: 'Nhập tin nhắn',
     send: 'Gửi',
     notSent: 'Bản demo: tin nhắn chưa được gửi thật.',
@@ -186,11 +187,11 @@ export const COMPOSE = {
   },
   ne: {
     boss: 'साहू',
-    autoTr: 'कोरियालीमा स्वतः अनुवाद',
-    hint: 'तपाईंको सन्देश कोरियालीमा अनुवाद गरेर साहूलाई पठाइन्छ।',
+    autoTr: 'कोरियालीमा पठाइन्छ',
+    hint: 'सन्देश साहूलाई कोरियालीमा पठाइन्छ। पहेँलो बाकसमा नेपालीमा अर्थ देखिन्छ।',
     attach: 'संलग्न: सेप्टेम्बरको तलब विवरण',
-    preview: 'साहूले देख्ने (कोरियाली)',
-    edited: 'तपाईंले आफैं लेखेको वाक्य पठाउँदा अनुवाद हुन्छ।',
+    preview: 'नेपालीमा अर्थ',
+    edited: 'तपाईंले कोरियाली सन्देश बदल्नुभयो।',
     placeholder: 'सन्देश लेख्नुहोस्',
     send: 'पठाउनुहोस्',
     notSent: 'डेमो: सन्देश साँच्चै पठाइएको छैन।',
@@ -202,11 +203,11 @@ export const COMPOSE = {
   },
   pt: {
     boss: 'Chefe',
-    autoTr: 'Tradução automática para coreano',
-    hint: 'Sua mensagem será traduzida para o coreano e enviada ao seu chefe.',
+    autoTr: 'Enviado em coreano',
+    hint: 'A mensagem vai para o seu chefe em coreano. O quadro amarelo mostra o que ela significa em português.',
     attach: 'Anexo: Holerite de setembro',
-    preview: 'O que seu chefe verá (em coreano)',
-    edited: 'O texto que você escrever será traduzido ao enviar.',
+    preview: 'Em português, significa',
+    edited: 'Você alterou a mensagem em coreano.',
     placeholder: 'Digite uma mensagem',
     send: 'Enviar',
     notSent: 'Demonstração: a mensagem não foi enviada de verdade.',
