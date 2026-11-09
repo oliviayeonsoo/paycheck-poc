@@ -1,5 +1,5 @@
-import { PAYDAY, START_BALANCE, LOAN_FILL, INSURANCE_DUE, BANKS, EMPLOYEES, LANG_LABEL, LANG_NATIVE, I18N, REPLIES } from './data.js';
-import { won, num, slip, total, premiums, checks, allChecks } from './engine.js';
+import { PAYDAY, START_BALANCE, LOAN_FILL, INSURANCE_DUE, BANKS, EMPLOYEES, LANG_LABEL, LANG_NATIVE, I18N, REPLIES } from './data.js?v=20261109';
+import { won, num, slip, total, premiums, checks, allChecks } from './engine.js?v=20261109';
 
 // 같은 앱을 세 가지로 연다. body의 data-mode로 고른다
 //   demo   (index.html):        사장님과 직원 화면 전체 + 데모 메뉴. 발표용

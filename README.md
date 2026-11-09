@@ -60,6 +60,8 @@ python3 -m http.server 8000
 
 ## 배포
 
+- 파일을 고친 뒤에는 `index.html`, `owner/index.html`, `worker/index.html`, `app.js`, `engine.js`에 붙은 `?v=` 값을 함께 올려 주세요. GitHub Pages는 파일을 10분 동안 캐시해서, 값을 올리지 않으면 휴대폰에 예전 화면이 남을 수 있어요.
+
 1. 저장소 **Settings > Pages > Build and deployment > Source**를 **GitHub Actions**로 한 번 바꿔요.
 2. `main`에 푸시하면 Actions가 자동으로 배포해요. 주소는 `https://<계정>.github.io/<저장소>/`예요.
 
