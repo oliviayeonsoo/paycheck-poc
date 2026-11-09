@@ -23,15 +23,19 @@
 - 데스크톱 오른쪽 안내판이나 휴대폰 왼쪽 가장자리 손잡이에서 장면을 바로 열고, 탑재 은행과 직원 화면을 바꾸고, 처음부터 다시 시작할 수 있어요.
 - 진행 상태는 브라우저 저장소(localStorage)에만 남아요. 서버로 보내는 데이터는 없어요.
 
-### 직원 인터뷰용 바로가기
+### 직원 화면만 따로 보기
 
-주소 뒤에 `?lang=언어`를 붙이면 급여가 이미 나간 9월 25일 상태로 직원 화면(카카오톡 알림)이 바로 열려요.
+직원 인터뷰에는 사장님 데모와 분리된 직원 전용 페이지를 써요. 데모 메뉴나 사장님 화면 없이, 언어 고르기, 카카오톡 알림, 모국어 명세서만 보여요. 급여가 이미 나간 9월 25일 상태에서 시작해요.
 
-| 언어 | 주소 |
+| 열리는 화면 | 주소 |
 |---|---|
-| 포르투갈어 | `https://oliviayeonsoo.github.io/paycheck-poc/?lang=pt` |
-| 베트남어 | `https://oliviayeonsoo.github.io/paycheck-poc/?lang=vi` |
-| 네팔어 | `https://oliviayeonsoo.github.io/paycheck-poc/?lang=ne` |
+| 언어 고르기부터 | `https://oliviayeonsoo.github.io/paycheck-poc/worker/` |
+| 포르투갈어로 바로 | `https://oliviayeonsoo.github.io/paycheck-poc/worker/?lang=pt` |
+| 베트남어로 바로 | `https://oliviayeonsoo.github.io/paycheck-poc/worker/?lang=vi` |
+| 네팔어로 바로 | `https://oliviayeonsoo.github.io/paycheck-poc/worker/?lang=ne` |
+
+- 직원 페이지의 진행 상태는 사장님 데모와 따로 저장돼요.
+- 예전 주소(`/paycheck-poc/?lang=pt`)로 열어도 직원 페이지로 넘어가요.
 
 ## 파일 구성
 
@@ -39,7 +43,8 @@
 
 | 파일 | 내용 |
 |---|---|
-| `index.html` | 화면 틀 |
+| `index.html` | 화면 틀 (사장님 데모) |
+| `worker/index.html` | 직원 전용 페이지. 같은 앱을 `data-mode="worker"`로 열어 직원 화면만 보여요 |
 | `styles.css` | 디자인 토큰과 컴포넌트 (네이비 `#0B1F4F`, 노랑 `#FFE300`, Pretendard) |
 | `app.js` | 화면, 해시 라우팅, 시트, 상태 저장 |
 | `engine.js` | 명세서 계산과 이체 전 점검 |

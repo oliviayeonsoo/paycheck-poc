@@ -1,7 +1,9 @@
 import { PAYDAY, START_BALANCE, LOAN_FILL, INSURANCE_DUE, BANKS, EMPLOYEES, LANG_LABEL, LANG_NATIVE, I18N, REPLIES } from './data.js';
 import { won, num, slip, total, premiums, checks, allChecks } from './engine.js';
 
-const STORE = 'paycheck-poc-v1';
+// worker/index.html 은 body에 data-mode="worker"를 달고 같은 앱을 직원 화면만 보이게 연다
+const WORKER = document.body.dataset.mode === 'worker';
+const STORE = WORKER ? 'paycheck-worker-v1' : 'paycheck-poc-v1';
 const $app = document.getElementById('app');
 const $sheet = document.getElementById('sheet-root');
 const $toast = document.getElementById('toast');
@@ -302,7 +304,7 @@ function chat() {
   return `
   <section class="screen kakao">
     <header class="nav kakao-nav">
-      <button class="icon-btn" data-go="${state.sent ? 'done' : 'home'}" aria-label="뒤로">${icon.back}</button>
+      <button class="icon-btn" data-go="${WORKER ? 'start' : state.sent ? 'done' : 'home'}" aria-label="뒤로">${icon.back}</button>
       <span class="nav-title left">${esc(bank().name)}</span>
       <span class="icon-btn" aria-hidden="true"></span>
     </header>
@@ -540,11 +542,31 @@ function guideHtml(inSheet = false) {
 
 /* ---------- 라우팅 ---------- */
 
-const ROUTES = { home, register, preview, confirm, done, records, chat, payslip };
+// 직원 전용 첫 화면: 언어 고르기
+function start() {
+  return `
+  <section class="screen">
+    <main class="content center-top start">
+      <span class="won-tile big-tile">₩</span>
+      <h1 class="h1">Choose your language</h1>
+      <p class="muted">명세서를 볼 언어를 골라 주세요</p>
+      <div class="lang-list">
+        ${['vi', 'ne', 'pt', 'ko'].map(l => `
+          <button class="card gray choice" data-action="pick-lang" data-lang="${l}">
+            <b>${LANG_NATIVE[l]}</b><small>${LANG_LABEL[l]}</small>
+          </button>`).join('')}
+      </div>
+      <p class="fine">Demo for a contest, not a real bank service. 공모전용 예시 화면이에요.</p>
+    </main>
+  </section>`;
+}
+
+const ROUTES = WORKER ? { start, chat, payslip } : { home, register, preview, confirm, done, records, chat, payslip };
 
 function route() {
   const r = location.hash.replace(/^#\/?/, '');
-  return ROUTES[r] ? r : 'home';
+  if (ROUTES[r]) return r;
+  return WORKER ? 'start' : 'home';
 }
 
 let lastRoute = null;
@@ -561,7 +583,7 @@ function render() {
   $app.innerHTML = ROUTES[r]();
   $app.querySelector('.content')?.scrollTo(0, keepScroll);
   document.body.dataset.route = r;
-  $guide.innerHTML = guideHtml();
+  if (!WORKER) $guide.innerHTML = guideHtml();
   const demoSheet = $sheet.classList.contains('open') && $sheet.dataset.kind === 'demo' && $sheet.querySelector('.sheet');
   if (demoSheet) demoSheet.innerHTML = `<span class="grip" aria-hidden="true"></span>${sheetHtml('demo')}`;
 }
@@ -678,13 +700,11 @@ function renderPrint() {
     <p>이 문서는 공모전 PoC 데모가 만든 예시 기록이에요.</p>`;
 }
 
-// ?lang=pt 처럼 언어를 붙여 열면 직원 인터뷰용으로 급여가 이미 나간 9월 25일 상태에서 직원 화면을 연다
+// 직원 화면은 급여가 이미 나간 9월 25일 상태에서 시작한다. ?lang=pt 처럼 언어를 붙이면 언어 고르기를 건너뛴다
 function openWorkerDemo() {
   const lang = new URLSearchParams(location.search).get('lang');
-  if (!lang || !I18N[lang]) return;
   state.registered = true;
   state.empView = 'a';
-  state.empLang.a = lang;
   state.infoKey = 'lodging';
   const a = emp('a');
   if (a.lodging > a.lodgingConsent) a.lodging = a.lodgingPrev;
@@ -693,15 +713,25 @@ function openWorkerDemo() {
     state.balance = Math.max(state.balance, t) - t;
     state.sent = { total: t, time: '14:02', slip: true, ins: { mode: 'due', amount: premiums(state.employees).total } };
   }
+  if (lang && I18N[lang]) {
+    state.empLang.a = lang;
+    if (!location.hash) history.replaceState(null, '', location.search + '#/chat');
+  }
   save();
-  if (!location.hash) history.replaceState(null, '', location.search + '#/chat');
 }
 
-openWorkerDemo();
+// 예전 직원 링크(?lang=pt)는 직원 전용 페이지로 넘긴다. 이미 나눠 준 QR도 그대로 쓸 수 있다
+const linkLang = new URLSearchParams(location.search).get('lang');
+if (!WORKER && linkLang && I18N[linkLang]) location.replace(`worker/?lang=${linkLang}`);
+
+if (WORKER) {
+  actions['pick-lang'] = el => { state.empLang.a = el.dataset.lang; go('chat'); };
+  openWorkerDemo();
+}
 render();
 let hinted = false;
 try { hinted = sessionStorage.getItem('paycheck-hint') === '1'; sessionStorage.setItem('paycheck-hint', '1'); } catch (e) { /* 무시 */ }
-if (!hinted && route() === 'home') {
+if (!WORKER && !hinted && route() === 'home') {
   const mobile = !matchMedia('(min-width: 760px)').matches;
   setTimeout(() => toast("'외국인 직원 급여' 카드를 눌러 시작해요"), 500);
   if (mobile) setTimeout(() => toast('왼쪽 가장자리 손잡이를 누르면 장면을 바로 열 수 있어요'), 3000);
