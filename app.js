@@ -1,9 +1,14 @@
 import { PAYDAY, START_BALANCE, LOAN_FILL, INSURANCE_DUE, BANKS, EMPLOYEES, LANG_LABEL, LANG_NATIVE, I18N, REPLIES } from './data.js';
 import { won, num, slip, total, premiums, checks, allChecks } from './engine.js';
 
-// worker/index.html 은 body에 data-mode="worker"를 달고 같은 앱을 직원 화면만 보이게 연다
-const WORKER = document.body.dataset.mode === 'worker';
-const STORE = WORKER ? 'paycheck-worker-v1' : 'paycheck-poc-v1';
+// 같은 앱을 세 가지로 연다. body의 data-mode로 고른다
+//   demo   (index.html):        사장님과 직원 화면 전체 + 데모 메뉴. 발표용
+//   owner  (owner/index.html):  사장님 화면만. 사장님 인터뷰용
+//   worker (worker/index.html): 직원 화면만. 직원 인터뷰용
+const MODE = document.body.dataset.mode || 'demo';
+const WORKER = MODE === 'worker';
+const OWNER = MODE === 'owner';
+const STORE = { demo: 'paycheck-poc-v1', owner: 'paycheck-owner-v1', worker: 'paycheck-worker-v1' }[MODE];
 const $app = document.getElementById('app');
 const $sheet = document.getElementById('sheet-root');
 const $toast = document.getElementById('toast');
@@ -245,7 +250,7 @@ function done() {
         <div class="check-line small">${checkDot}<span>은행이 ${PAYDAY.month}월 ${PAYDAY.day}일 ${s.time} 지급을 확인했어요</span></div>
         ${insuranceLine(s)}
       </div>
-      ${s.slip ? '<button class="link" data-go="chat">직원 휴대폰에서 보기</button>' : ''}
+      ${s.slip && !OWNER ? '<button class="link" data-go="chat">직원 휴대폰에서 보기</button>' : ''}
     </main>
     <footer class="cta"><button class="btn primary" data-go="records">확인</button></footer>
   </section>`;
@@ -561,7 +566,11 @@ function start() {
   </section>`;
 }
 
-const ROUTES = WORKER ? { start, chat, payslip } : { home, register, preview, confirm, done, records, chat, payslip };
+const ROUTES = {
+  demo: { home, register, preview, confirm, done, records, chat, payslip },
+  owner: { home, register, preview, confirm, done, records },
+  worker: { start, chat, payslip },
+}[MODE];
 
 function route() {
   const r = location.hash.replace(/^#\/?/, '');
@@ -583,7 +592,7 @@ function render() {
   $app.innerHTML = ROUTES[r]();
   $app.querySelector('.content')?.scrollTo(0, keepScroll);
   document.body.dataset.route = r;
-  if (!WORKER) $guide.innerHTML = guideHtml();
+  if (MODE === 'demo') $guide.innerHTML = guideHtml();
   const demoSheet = $sheet.classList.contains('open') && $sheet.dataset.kind === 'demo' && $sheet.querySelector('.sheet');
   if (demoSheet) demoSheet.innerHTML = `<span class="grip" aria-hidden="true"></span>${sheetHtml('demo')}`;
 }
@@ -721,8 +730,18 @@ function openWorkerDemo() {
 }
 
 // 예전 직원 링크(?lang=pt)는 직원 전용 페이지로 넘긴다. 이미 나눠 준 QR도 그대로 쓸 수 있다
-const linkLang = new URLSearchParams(location.search).get('lang');
-if (!WORKER && linkLang && I18N[linkLang]) location.replace(`worker/?lang=${linkLang}`);
+const params = new URLSearchParams(location.search);
+const linkLang = params.get('lang');
+if (MODE === 'demo' && linkLang && I18N[linkLang]) location.replace(`worker/?lang=${linkLang}`);
+
+// ?reset 을 붙여 열면 그 페이지의 진행 상태를 지우고 처음부터 (인터뷰 사이에 같은 휴대폰을 쓸 때)
+if (params.has('reset')) {
+  state = freshState();
+  save();
+  params.delete('reset');
+  const rest = params.toString();
+  history.replaceState(null, '', location.pathname + (rest ? '?' + rest : '') + location.hash);
+}
 
 if (WORKER) {
   actions['pick-lang'] = el => { state.empLang.a = el.dataset.lang; go('chat'); };
@@ -730,9 +749,9 @@ if (WORKER) {
 }
 render();
 let hinted = false;
-try { hinted = sessionStorage.getItem('paycheck-hint') === '1'; sessionStorage.setItem('paycheck-hint', '1'); } catch (e) { /* 무시 */ }
+try { hinted = sessionStorage.getItem(`paycheck-hint-${MODE}`) === '1'; sessionStorage.setItem(`paycheck-hint-${MODE}`, '1'); } catch (e) { /* 무시 */ }
 if (!WORKER && !hinted && route() === 'home') {
   const mobile = !matchMedia('(min-width: 760px)').matches;
   setTimeout(() => toast("'외국인 직원 급여' 카드를 눌러 시작해요"), 500);
-  if (mobile) setTimeout(() => toast('왼쪽 가장자리 손잡이를 누르면 장면을 바로 열 수 있어요'), 3000);
+  if (mobile && MODE === 'demo') setTimeout(() => toast('왼쪽 가장자리 손잡이를 누르면 장면을 바로 열 수 있어요'), 3000);
 }

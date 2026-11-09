@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#FFFFFF">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="description" content="페이체크 PoC 사장님 화면: 은행 앱 이체에 붙는 외국인 직원 급여 모듈">
+  <title>페이체크 사장님 화면</title>
+  <link rel="icon" href="../assets/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="../assets/icon.svg">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body data-mode="owner">
+  <div id="stage">
+    <div id="phone" aria-live="polite">
+      <div class="statusbar" aria-hidden="true">
+        <span>9:41</span>
+        <span class="status-icons"><i class="sig"></i><i class="wifi"></i><i class="bat">100</i></span>
+      </div>
+      <div id="app"></div>
+      <div id="sheet-root"></div>
+      <div id="toast" role="status"></div>
+      <button id="demo-tab" type="button" aria-hidden="true" tabindex="-1">데모</button>
+    </div>
+    <aside id="guide" aria-hidden="true"></aside>
+  </div>
+  <div id="print-root" aria-hidden="true"></div>
+  <noscript>이 데모는 자바스크립트가 필요해요.</noscript>
+  <script type="module" src="../app.js"></script>
+</body>
+</html>
