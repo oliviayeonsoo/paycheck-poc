@@ -1,5 +1,5 @@
 // 이체 전 점검과 명세서 계산. 판정이 아니라 사장님에게 보여 주는 참고 알림을 만든다.
-import { MIN_WAGE } from './data.js?v=20261109g';
+import { MIN_WAGE } from './data.js?v=20261109h';
 
 export const won = n => `${Math.round(n).toLocaleString('ko-KR')}원`;
 export const num = n => Math.round(n).toLocaleString('ko-KR');

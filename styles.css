@@ -196,6 +196,12 @@ svg { display: block; }
 .arch-row.current { background: var(--yellow-soft); }
 .arch-row.total .val b { font-size: 18px; font-weight: 800; }
 
+/* 사장님 직원별 명세서 보관함 */
+.emp-seg { background: var(--card); }
+.emp-seg button { font-size: 14px; padding: 10px 4px; }
+.arch-row .val small b { font-weight: 600; }
+button.arch-row:active { background: var(--card); }
+
 /* 해외송금 */
 .remit-field { display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--gray); }
 .remit-input { display: flex; align-items: center; gap: 6px; border-bottom: 2px solid var(--navy); padding-bottom: 4px; }
@@ -296,6 +302,7 @@ body[data-mode="owner"] #guide { display: none !important; }
   #print-root table { width: 100%; border-collapse: collapse; margin: 12px 0; }
   #print-root th, #print-root td { border: 1px solid #999; padding: 6px; text-align: right; }
   #print-root tfoot td { font-weight: 700; }
+  #print-root h2 { font-size: 14px; margin-top: 16px; }
   #print-root th:first-child, #print-root td:first-child { text-align: left; }
 }
 

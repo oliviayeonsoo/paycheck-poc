@@ -1,5 +1,5 @@
-import { PAYDAY, START_BALANCE, LOAN_FILL, INSURANCE_DUE, BANKS, EMPLOYEES, LANG_LABEL, LANG_NATIVE, I18N, COMPOSE, ARCHIVE, REMIT, EXTRA, REPLIES } from './data.js?v=20261109g';
-import { won, num, slip, total, premiums, checks, allChecks } from './engine.js?v=20261109g';
+import { PAYDAY, START_BALANCE, LOAN_FILL, INSURANCE_DUE, BANKS, EMPLOYEES, LANG_LABEL, LANG_NATIVE, I18N, COMPOSE, ARCHIVE, OWNER_ARCHIVE, REMIT, EXTRA, REPLIES } from './data.js?v=20261109h';
+import { won, num, slip, total, premiums, checks, allChecks } from './engine.js?v=20261109h';
 
 // 같은 앱을 세 가지로 연다. body의 data-mode로 고른다
 //   demo   (index.html):        사장님과 직원 화면 전체 + 데모 메뉴. 발표용
@@ -291,6 +291,11 @@ function records() {
         ${state.sent && state.sent.ins ? `<hr>${kv('4대보험료', state.sent.ins.mode === 'now' ? `<span class="navy">${won(state.sent.ins.amount)} 납부 완료</span>` : `${INSURANCE_DUE} 자동 납부 예약`, 'light')}` : ''}
       </div>
       ${inquiries}
+      <button class="card new row-between" data-go="slips">
+        ${badgeNew}
+        <span><b class="card-title">직원별 명세서 보관함</b><small>보낸 명세서와 열람 기록을 직원마다 모아 봐요</small></span>
+        <b class="link-text">보기 ›</b>
+      </button>
       <button class="card new row-between" data-sheet="benefit">
         ${badgeNew}
         <span><b class="card-title">성실 지급 12개월째</b><small>사업자 대출 금리 우대 대상이에요</small></span>
@@ -442,6 +447,60 @@ function compose() {
   </section>`;
 }
 
+// 사장님용 직원별 명세서 보관함: 직원마다 6개월 동안 보낸 명세서와 교부 기록
+function ownerSlipRows(e) {
+  const past = OWNER_ARCHIVE[e.id].map(r => ({ ...r, status: r.inquiry ? 'answered' : 'done' }));
+  const s = state.sent;
+  const inq = state.inquiries.filter(q => q.emp === e.id);
+  const now = {
+    month: PAYDAY.month, net: slip(e).net, current: true,
+    sent: s ? s.time : null, slip: s ? s.slip : false,
+    viewed: s && state.viewed[e.id] ? '18:40' : null,
+    status: !s ? 'before' : inq.some(q => !q.reply) ? 'inquiry' : state.viewed[e.id] ? 'done' : 'unread',
+  };
+  return [now, ...past.reverse()];
+}
+
+const SLIP_STATUS = {
+  done: '<b class="navy">열람과 대조 완료</b>',
+  answered: '<b class="navy">문의 1건, 답변 완료</b>',
+  inquiry: '<b>문의 있음</b>',
+  unread: '<b class="t-gray">발송 완료, 열람 전</b>',
+  before: '<b class="t-gray">이체 전</b>',
+};
+
+function slips() {
+  const e = emp(state.slipEmp || 'a');
+  const rows = ownerSlipRows(e);
+  const sentCount = rows.filter(r => r.sent && r.slip !== false).length;
+  const viewedCount = rows.filter(r => r.viewed).length;
+  return `
+  <section class="screen">
+    ${nav('직원별 명세서 보관함', 'records')}
+    <main class="content">
+      <div class="seg emp-seg" role="tablist" aria-label="직원 고르기">
+        ${state.employees.map(x => `<button role="tab" aria-selected="${x.id === e.id}" class="${x.id === e.id ? 'on' : ''}" data-action="slip-emp" data-emp="${x.id}">${esc(x.name)}</button>`).join('')}
+      </div>
+      <div class="card gray">
+        <b class="card-title">${esc(e.name)}</b>
+        <div class="chips"><span>${e.nation}</span><span>${LANG_LABEL[e.lang]} 명세서</span><span>${e.visa}</span></div>
+        ${kv('6개월 동안 보낸 명세서', `${sentCount}건`, 'light')}
+        ${kv('직원이 열어 본 명세서', `${viewedCount}건`, 'light')}
+      </div>
+      <div class="card new archive">
+        ${badgeNew}
+        ${rows.map((r, i) => `
+          <button class="arch-row ${r.current ? 'current' : ''}" data-sheet="slip-detail" data-idx="${i}">
+            <span class="lbl"><b>${r.month}월</b><small>${r.sent ? `${r.month}월 ${PAYDAY.day}일 ${r.sent} ${LANG_LABEL[e.lang]}로 발송` : '아직 보내지 않았어요'}</small></span>
+            <span class="val"><b>${num(r.net)}</b><small>${SLIP_STATUS[r.status]}</small></span>
+          </button>`).join('')}
+      </div>
+      <p class="fine">달을 누르면 그달 명세서와 교부 기록(발송, 열람, 대조 시각)을 볼 수 있어요.</p>
+    </main>
+    <footer class="cta"><button class="btn primary" data-action="slips-print">보관함 전체 내려받기 (6개월)</button></footer>
+  </section>`;
+}
+
 // 지난 명세서 보관함: 은행이 지급을 확인한 6개월 기록과 소득 확인서
 function archiveRows() {
   const e = emp(state.empView);
@@ -553,6 +612,32 @@ function sheetHtml(kind, data) {
         </div>`;
       }).join('')}
       <button class="btn primary" data-action="save-edit">다시 점검하기</button>`;
+  }
+  if (kind === 'slip-detail') {
+    const e = emp(state.slipEmp || 'a');
+    const r = ownerSlipRows(e)[data.idx];
+    const ins = e.insurance;
+    const lodging = r.current ? slip(e).lodging : e.lodgingPrev;
+    const base = r.net + lodging + ins;
+    const day = `${r.month}월 ${PAYDAY.day}일`;
+    return `
+      <h3>${esc(e.name)}, ${r.month}월 명세서</h3>
+      <div class="card gray">
+        ${kv('기본급', won(base), 'light')}
+        ${lodging ? kv('숙식비', '-' + won(lodging), 'light') : ''}
+        ${kv('보험료', '-' + won(ins), 'light')}
+        <hr>
+        ${kv('실지급', won(r.net))}
+      </div>
+      <div class="card gray">
+        <small>교부 기록</small>
+        ${kv('지급', r.sent ? `${day} ${r.sent} 은행 확인` : '이체 전', 'light')}
+        ${kv('명세서 발송', r.sent && r.slip !== false ? `${day} ${r.sent} ${LANG_LABEL[e.lang]} 카톡` : '-', 'light')}
+        ${kv('직원 열람', r.viewed ? `${day} ${r.viewed}` : '-', 'light')}
+        ${kv('입금 대조', r.viewed ? '일치' : '-', 'light')}
+        ${r.inquiry ? kv('받은 문의', `“${esc(r.inquiry)}” 답변 완료`, 'light') : ''}
+      </div>
+      <button class="btn primary" data-close>확인</button>`;
   }
   if (kind === 'benefit') {
     return `
@@ -688,8 +773,8 @@ function start() {
 }
 
 const ROUTES = {
-  demo: { home, register, preview, confirm, done, records, chat, payslip, compose, archive, remit },
-  owner: { home, register, preview, confirm, done, records },
+  demo: { home, register, preview, confirm, done, records, slips, chat, payslip, compose, archive, remit },
+  owner: { home, register, preview, confirm, done, records, slips },
   worker: { start, chat, payslip, compose, archive, remit },
 }[MODE];
 
@@ -801,6 +886,8 @@ const actions = {
   reset: () => { state = freshState(); closeSheet(); go('home'); toast('처음부터 다시 시작해요'); },
   print: () => { renderPrint(); window.print(); return false; },
   proof: () => { renderProof(); window.print(); return false; },
+  'slip-emp': el => { state.slipEmp = el.dataset.emp; },
+  'slips-print': () => { renderSlipsPrint(); window.print(); return false; },
   'remit-quick': el => { state.remitAmount = Number(el.dataset.val); },
   'remit-send': () => { toast(EXTRA[state.empLang[state.empView]].notSent); return false; },
 };
@@ -884,6 +971,20 @@ function renderPrint() {
       }).join('')}</tbody>
     </table>
     ${s && s.ins ? `<p>4대보험료 ${num(s.ins.amount)}원: ${s.ins.mode === 'now' ? '급여일에 함께 납부' : `${INSURANCE_DUE} 자동 납부 예약`}</p>` : ''}
+    <p>이 문서는 공모전 PoC 데모가 만든 예시 기록이에요.</p>`;
+}
+
+// 사장님용 보관함 전체 출력: 직원마다 6개월 명세서와 교부 기록
+function renderSlipsPrint() {
+  document.getElementById('print-root').innerHTML = `
+    <h1>직원별 명세서 교부 기록 (${PAYDAY.year}년 4월 ~ ${PAYDAY.month}월)</h1>
+    <p>탑재 은행: ${esc(bank().name)} (PoC 예시)</p>
+    ${state.employees.map(e => `
+      <h2>${esc(e.name)} (${e.nation}, ${LANG_LABEL[e.lang]} 명세서)</h2>
+      <table>
+        <thead><tr><th>월</th><th>실지급액(원)</th><th>발송</th><th>열람</th><th>상태</th></tr></thead>
+        <tbody>${ownerSlipRows(e).slice().reverse().map(r => `<tr><td>${r.month}월</td><td>${num(r.net)}</td><td>${r.sent ? `${r.month}.${PAYDAY.day} ${r.sent}` : '-'}</td><td>${r.viewed ? `${r.month}.${PAYDAY.day} ${r.viewed}` : '-'}</td><td>${SLIP_STATUS[r.status].replace(/<[^>]+>/g, '')}</td></tr>`).join('')}</tbody>
+      </table>`).join('')}
     <p>이 문서는 공모전 PoC 데모가 만든 예시 기록이에요.</p>`;
 }
 

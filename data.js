@@ -228,6 +228,32 @@ export const ARCHIVE = [
   { month: 8, net: 2330000, time: '14:02' },
 ];
 
+// 사장님 쪽 직원별 명세서 보관함 (4~8월). 9월은 앱 상태에서 계산한다
+// sent: 명세서 발송 시각(급여일), viewed: 직원 열람 시각, inquiry: 그달 받은 문의 (답변 완료)
+export const OWNER_ARCHIVE = {
+  a: [
+    { month: 4, net: 2350000, sent: '13:48', viewed: '19:02' },
+    { month: 5, net: 2380000, sent: '14:05', viewed: '18:21' },
+    { month: 6, net: 2410000, sent: '13:57', viewed: '20:15' },
+    { month: 7, net: 2380000, sent: '14:11', viewed: '18:47' },
+    { month: 8, net: 2330000, sent: '14:02', viewed: '19:30' },
+  ],
+  b: [
+    { month: 4, net: 2420000, sent: '13:48', viewed: '13:55' },
+    { month: 5, net: 2400000, sent: '14:05', viewed: '14:20' },
+    { month: 6, net: 2450000, sent: '13:57', viewed: '15:02' },
+    { month: 7, net: 2420000, sent: '14:11', viewed: '14:30' },
+    { month: 8, net: 2390000, sent: '14:02', viewed: '16:44' },
+  ],
+  c: [
+    { month: 4, net: 4700000, sent: '13:48', viewed: '21:10' },
+    { month: 5, net: 4720000, sent: '14:05', viewed: '22:03' },
+    { month: 6, net: 4750000, sent: '13:57', viewed: '21:36' },
+    { month: 7, net: 4720000, sent: '14:11', viewed: '20:58', inquiry: '보험료가 왜 빠졌어요?' },
+    { month: 8, net: 4680000, sent: '14:02', viewed: '21:41' },
+  ],
+};
+
 // 해외송금 예시 조건. 환율과 수수료는 데모용 숫자다
 export const REMIT = {
   fee: 5000,
