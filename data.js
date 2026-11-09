@@ -32,10 +32,10 @@ export const EMPLOYEES = [
   },
 ];
 
-export const LANG_LABEL = { vi: '베트남어', ne: '네팔어', ko: '한국어' };
-export const LANG_NATIVE = { vi: 'Tiếng Việt', ne: 'नेपाली', ko: '한국어' };
+export const LANG_LABEL = { vi: '베트남어', ne: '네팔어', pt: '포르투갈어', ko: '한국어' };
+export const LANG_NATIVE = { vi: 'Tiếng Việt', ne: 'नेपाली', pt: 'Português', ko: '한국어' };
 
-// 직원 화면 문구. 베트남어와 네팔어는 PoC용 예시 번역이라 원어민 검수가 필요하다.
+// 직원 화면 문구. 베트남어, 네팔어, 포르투갈어(브라질)는 PoC용 예시 번역이라 원어민 검수가 필요하다.
 export const I18N = {
   ko: {
     chatTitle: '9월 급여명세서가 도착했어요',
@@ -53,6 +53,7 @@ export const I18N = {
     lodgingA: '사장님이 제공한 숙소와 식사 비용이에요. 서면으로 동의한 금액까지만 빠져요.',
     insuranceQ: '보험료란?',
     insuranceA: '국민연금, 건강보험, 고용보험 중 직원이 내는 몫이에요.',
+    note: '명세서는 한국어 원문에 직원 모국어를 함께 적어요. 법적 효력은 한국어 원문 기준이에요.',
     ask: '사장님에게 문의하기',
     askTitle: '무엇이 궁금한가요?',
     sent: '사장님께 보냈어요',
@@ -78,6 +79,7 @@ export const I18N = {
     lodgingA: 'Là chi phí chỗ ở và bữa ăn do chủ cửa hàng cung cấp. Chỉ được trừ tối đa số tiền bạn đã đồng ý bằng văn bản.',
     insuranceQ: 'Bảo hiểm là gì?',
     insuranceA: 'Là phần người lao động đóng cho lương hưu quốc gia, bảo hiểm y tế và bảo hiểm việc làm.',
+    note: 'Bảng lương ghi bản gốc tiếng Hàn kèm tiếng mẹ đẻ của bạn. Bản tiếng Hàn có giá trị pháp lý.',
     ask: 'Hỏi chủ cửa hàng',
     askTitle: 'Bạn muốn hỏi điều gì?',
     sent: 'Đã gửi cho chủ cửa hàng',
@@ -103,6 +105,7 @@ export const I18N = {
     lodgingA: 'साहूले दिएको बस्ने ठाउँ र खानाको खर्च हो। तपाईंले लिखित सहमति दिएको रकमसम्म मात्र काटिन्छ।',
     insuranceQ: 'बीमा के हो?',
     insuranceA: 'राष्ट्रिय पेन्सन, स्वास्थ्य बीमा र रोजगार बीमामा कामदारले तिर्ने भाग हो।',
+    note: 'तलब विवरणमा कोरियाली मूल पाठसँगै तपाईंको भाषा पनि लेखिन्छ। कानुनी रूपमा कोरियाली पाठ मान्य हुन्छ।',
     ask: 'साहूलाई सोध्नुहोस्',
     askTitle: 'के सोध्न चाहनुहुन्छ?',
     sent: 'साहूलाई पठाइयो',
@@ -110,6 +113,32 @@ export const I18N = {
       lodgingQ: 'बसोबास र खाना खर्च के हो?',
       diff: 'यो महिनाको तलब किन फरक छ?',
       hours: 'म मेरो काम गरेको घण्टा जाँच्न चाहन्छु',
+    },
+  },
+  pt: {
+    chatTitle: 'Seu holerite de setembro chegou',
+    depositOk: 'Depósito confirmado',
+    view: 'Ver holerite',
+    slipTitle: 'Holerite de setembro',
+    match: 'O valor do holerite é igual ao valor depositado',
+    confirmed: t => `O banco confirmou o pagamento em 25/9 às ${t}`,
+    section: 'Detalhes do pagamento',
+    base: 'Salário base',
+    lodging: 'Moradia e alimentação',
+    insurance: 'Seguros sociais',
+    net: 'Valor líquido',
+    lodgingQ: 'O que é moradia e alimentação?',
+    lodgingA: 'É o custo da moradia e das refeições oferecidas pelo empregador. Só pode ser descontado até o valor que você aceitou por escrito.',
+    insuranceQ: 'O que são os seguros sociais?',
+    insuranceA: 'É a parte que o trabalhador paga da previdência nacional, do plano de saúde e do seguro-desemprego.',
+    note: 'O holerite mostra o texto original em coreano junto com o seu idioma. O texto em coreano é o que vale legalmente.',
+    ask: 'Perguntar ao chefe',
+    askTitle: 'O que você quer perguntar?',
+    sent: 'Enviado ao seu chefe',
+    q: {
+      lodgingQ: 'O que é moradia e alimentação?',
+      diff: 'Por que meu salário deste mês é diferente do mês passado?',
+      hours: 'Quero conferir minhas horas trabalhadas',
     },
   },
 };
@@ -120,10 +149,12 @@ export const REPLIES = [
     ko: '숙식비는 숙소와 식사 비용이에요. 서면으로 동의한 금액만큼만 빠져요.',
     vi: 'Tiền ăn ở là chi phí chỗ ở và bữa ăn. Chỉ trừ đúng số tiền bạn đã đồng ý bằng văn bản.',
     ne: 'बसोबास र खाना खर्च भनेको बस्ने ठाउँ र खानाको खर्च हो। लिखित सहमति दिएको रकम मात्र काटिन्छ।',
+    pt: 'Moradia e alimentação é o custo do alojamento e das refeições. Só é descontado o valor que você aceitou por escrito.',
   },
   {
     ko: '이번 달은 근무 시간이 달라서 금액이 달라요. 근무 기록을 보내 드릴게요.',
     vi: 'Tháng này giờ làm khác nên số tiền khác. Tôi sẽ gửi bảng chấm công cho bạn.',
     ne: 'यो महिना काम गरेको घण्टा फरक भएकाले रकम फरक छ। म तपाईंलाई हाजिरी विवरण पठाउँछु।',
+    pt: 'Este mês as horas trabalhadas foram diferentes, por isso o valor mudou. Vou te enviar o registro de ponto.',
   },
 ];

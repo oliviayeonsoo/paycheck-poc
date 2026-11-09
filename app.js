@@ -228,13 +228,14 @@ function records() {
   const allDone = state.sent && state.employees.every(e => state.viewed[e.id]) && state.inquiries.every(q => q.reply);
   const inquiries = state.inquiries.map((q, idx) => {
     const e = emp(q.emp);
+    const lang = q.lang || e.lang;
     return `
       <div class="card gray">
         <small>${esc(e.name)}의 문의</small>
         <b class="quote">“${esc(I18N.ko.q[q.key])}”</b>
-        <small>${LANG_LABEL[e.lang]}에서 한국어로 번역됨</small>
+        <small>${lang === 'ko' ? '한국어로 받은 문의' : `${LANG_LABEL[lang]}에서 한국어로 번역됨`}</small>
         ${q.reply
-          ? `<div class="reply"><small>보낸 답장</small><p>${esc(REPLIES[q.reply - 1].ko)}</p><p class="tr">${esc(REPLIES[q.reply - 1][e.lang])}</p></div>`
+          ? `<div class="reply"><small>보낸 답장</small><p>${esc(REPLIES[q.reply - 1].ko)}</p>${lang === 'ko' ? '' : `<p class="tr">${esc(REPLIES[q.reply - 1][lang])}</p>`}</div>`
           : `<button class="btn white" data-sheet="reply" data-idx="${idx}">답장하기</button>`}
       </div>`;
   }).join('');
@@ -348,7 +349,7 @@ function payslip() {
         <div class="slip-row total"><span class="lbl"><b>${esc(L.net)}</b>${lang !== 'ko' ? `<small>${esc(K.net)}</small>` : ''}</span><span class="val">${num(s.net)}</span></div>
       </div>
       ${explain}
-      <p class="fine">명세서는 한국어 원문에 직원 모국어를 함께 적어요. 법적 효력은 한국어 원문 기준이에요.</p>
+      <p class="fine">${esc(L.note)}${lang !== 'ko' ? `<br>${esc(K.note)}` : ''}</p>
     </main>
     <footer class="cta"><button class="btn primary" data-sheet="ask">${esc(L.ask)}</button></footer>
   </section>`;
@@ -408,12 +409,13 @@ function sheetHtml(kind, data) {
   if (kind === 'reply') {
     const q = state.inquiries[data.idx];
     const e = emp(q.emp);
+    const lang = q.lang || e.lang;
     return `
       <h3>${esc(e.name)}에게 답장</h3>
-      <p class="desc">고른 문장이 ${LANG_LABEL[e.lang]}로 번역돼 카톡으로 가요.</p>
+      <p class="desc">${lang === 'ko' ? '고른 문장이 카톡으로 가요.' : `고른 문장이 ${LANG_LABEL[lang]}로 번역돼 카톡으로 가요.`}</p>
       ${REPLIES.map((r, i) => `
         <button class="card gray choice" data-action="reply" data-idx="${data.idx}" data-reply="${i + 1}">
-          <b>${esc(r.ko)}</b><small>${esc(r[e.lang])}</small>
+          <b>${esc(r.ko)}</b>${lang === 'ko' ? '' : `<small>${esc(r[lang])}</small>`}
         </button>`).join('')}`;
   }
   if (kind === 'ask') {
@@ -428,7 +430,7 @@ function sheetHtml(kind, data) {
   }
   if (kind === 'lang') {
     const e = emp(state.empView);
-    const langs = [...new Set([e.lang, 'ko', 'vi', 'ne'])];
+    const langs = [...new Set([e.lang, 'ko', 'vi', 'ne', 'pt'])];
     return `
       <h3>명세서 언어</h3>
       ${langs.map(l => `
@@ -495,6 +497,10 @@ function guideHtml(inSheet = false) {
     <div class="opt">
       <span>직원 화면</span>
       <div class="seg">${['a', 'c'].map(id => `<button class="${state.empView === id ? 'on' : ''}" data-action="emp" data-emp="${id}">${esc(emp(id).name)}</button>`).join('')}</div>
+    </div>
+    <div class="opt">
+      <span>직원 화면 언어</span>
+      <div class="seg">${['vi', 'ne', 'pt', 'ko'].map(l => `<button class="${state.empLang[state.empView] === l ? 'on' : ''}" data-action="lang" data-lang="${l}">${LANG_NATIVE[l]}</button>`).join('')}</div>
     </div>
     <button class="btn secondary reset" data-action="reset">처음부터 다시</button>
     <p class="fine">실제 금융 서비스가 아니에요. 이름, 금액, 은행 화면은 모두 예시이고 번역은 원어민 검수 전이에요.</p>`;
@@ -575,7 +581,7 @@ const actions = {
   },
   ask: el => {
     const e = emp(state.empView);
-    state.inquiries.push({ emp: e.id, key: el.dataset.key, reply: null });
+    state.inquiries.push({ emp: e.id, key: el.dataset.key, reply: null, lang: state.empLang[e.id] });
     closeSheet();
     toast(I18N[state.empLang[e.id]].sent);
   },
@@ -632,6 +638,26 @@ function renderPrint() {
     <p>이 문서는 공모전 PoC 데모가 만든 예시 기록이에요.</p>`;
 }
 
+// ?lang=pt 처럼 언어를 붙여 열면 직원 인터뷰용으로 급여가 이미 나간 9월 25일 상태에서 직원 화면을 연다
+function openWorkerDemo() {
+  const lang = new URLSearchParams(location.search).get('lang');
+  if (!lang || !I18N[lang]) return;
+  state.registered = true;
+  state.empView = 'a';
+  state.empLang.a = lang;
+  state.infoKey = 'lodging';
+  const a = emp('a');
+  if (a.lodging > a.lodgingConsent) a.lodging = a.lodgingPrev;
+  if (!state.sent) {
+    const t = total(state.employees);
+    state.balance = Math.max(state.balance, t) - t;
+    state.sent = { total: t, time: '14:02', slip: true };
+  }
+  save();
+  if (!location.hash) history.replaceState(null, '', location.search + '#/chat');
+}
+
+openWorkerDemo();
 render();
 let hinted = false;
 try { hinted = sessionStorage.getItem('paycheck-hint') === '1'; sessionStorage.setItem('paycheck-hint', '1'); } catch (e) { /* 무시 */ }
